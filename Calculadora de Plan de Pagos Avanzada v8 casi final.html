@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Planes de Pago</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css?v=4" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* Nueva clase para títulos con marco azul y tamaño unificado */
+        .framed-title {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 10px; /* Consistente con section-title */
+            font-size: 1.5rem; /* TAMAÑO UNIFICADO para todos los títulos */
+            font-weight: bold; /* Peso de fuente para el título principal */
+            padding: 10px 15px;
+            border: 2px solid #007bff; /* Marco azul */
+            border-radius: 8px; /* Borde redondeado */
+            display: block;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* Ajuste para el h1 principal, heredará de .framed-title */
+        h1.framed-title {
+            margin-bottom: 5px; /* Más pequeño para el h1 */
+            border-radius: 12px; /* Un poco más redondeado para el h1 si se desea */
+        }
+
+        .section-title {
+            /* Ahora hereda de .framed-title o tiene sus propios estilos específicos */
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.5rem; /* TAMAÑO UNIFICADO para todos los títulos */
+            font-weight: 600;
+            margin-top: 10px;
+            padding: 10px 15px; /* Añadido padding para que el marco tenga espacio */
+            border: 2px solid #007bff; /* Marco azul */
+            border-radius: 8px; /* Borde redondeado */
+            width: fit-content; /* Para que el marco se ajuste al contenido */
+            margin-left: auto; /* Para centrar el marco */
+            margin-right: auto; /* Para centrar el marco */
+        }
+        /* Ajustes específicos para los títulos dentro de tablas de resultados y resumen */
+        .results-table-container h2,
+        .summary-section h2 {
+            color: #0056b3;
+            text-align: center;
+            font-size: 1.5rem; /* TAMAÑO UNIFICADO para todos los títulos */
+            font-weight: 600;
+            margin-top: 10px;
+            margin-bottom: 10px; /* Ajuste de margen para consistencia */
+            padding: 10px 15px; /* Añadido padding para el marco */
+            border: 2px solid #007bff; /* Marco azul */
+            border-radius: 8px; /* Borde redondeado */
+            width: fit-content; /* Para que el marco se ajuste al contenido */
+            margin-left: auto; /* Para centrar el marco */
+            margin-right: auto; /* Para centrar el marco */
+        }
+
+
+        .form-section {
+            margin-bottom: 20px; /* Reducido ligeramente */
+            padding: 15px; /* Padding interno reducido */
+            border: 1px solid #e0e0e0; /* Borde predeterminado, se sobrescribe en contactInfoSection */
+            border-radius: 8 obstante;
+            background-color: #f9f9f9;
+
+            /* --- LAYOUT DE CUATRO COLUMNAS POR DEFECTO --- */
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px 2px; /* Espacio horizontal y vertical reducidos al mínimo */
+
+            /* Media queries para responsividad */
+            @media (max-width: 1024px) {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            @media (max-width: 768px) {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Marco rojo para la sección de Datos del Contacto */
+        #contactInfoSection {
+            border: 2px solid #dc3545; /* Color rojo */
+        }
+
+        /* Marco rojo redondeado para la sección de Refinanciación */
+        #refinancingSection {
+            border: 2px solid #dc3545; /* Color rojo */
+            border-radius: 8px; /* Redondeado */
+        }
+
+        .form-field-row {
+            display: flex;
+            align-items: center;
+            gap: 2px; /* Espacio entre label e input reducido al mínimo */
+        }
+        .form-field-row label {
+            flex-shrink: 0;
+            width: 70px; /* REDUCIDO: Ancho fijo para las etiquetas para alineación, minimizando espacio horizontal */
+            text-align: right;
+            font-size: 0.875rem;
+        }
+        .form-field-row .input-wrapper {
+            flex-grow: 1;
+        }
+        .form-field-row input[type="text"],
+        .form-field-row input[type="number"],
+        .form-field-row input[type="date"],
+        .form-field-row select {
+            width: 100%;
+            padding: 3px 5px; /* Padding reducido */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            max-width: 18ch;
+        }
+        .form-field-row textarea {
+            width: 100%;
+            padding: 3px 5px; /* Padding reducido */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Regla para que la fila de Notas Adicionales ocupe todas las columnas */
+        #additionalNotesRow {
+            grid-column: 1 / -1;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px; /* Gap entre botones reducido */
+            margin-top: 20px; /* Margen ligeramente reducido */
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 15px; /* Padding de botones reducido */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px; /* Fuente ligeramente más pequeña */
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        .results-table-container {
+            margin-top: 20px; /* Margen reducido */
+            overflow-x: auto;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px; /* Margen reducido */
+        }
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 5px; /* Padding reducido */
+            text-align: left;
+        }
+        .results-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .results-table input[type="date"],
+        .results-table input[type="number"],
+        .results-table input[type="text"] {
+            width: 100%;
+            padding: 4px; /* Padding reducido */
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .summary-section {
+            background-color: #e9ecef;
+            padding: 15px; /* Padding reducido */
+            border-radius: 8px;
+            margin-top: 15px; /* Margen reducido */
+            
+            /* MODIFICACIÓN: Layout de dos columnas para el resumen */
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Dos columnas de igual ancho */
+            gap: 10px 20px; /* Espacio vertical y horizontal entre los elementos del resumen */
+        }
+        .summary-section h2 { /* Asegura que el título no se vea afectado por el grid del padre */
+            grid-column: 1 / -1; /* Hace que el título ocupe todas las columnas */
+            margin-bottom: 10px; /* Ajuste de margen para consistencia */
+        }
+        .summary-row {
+            /* display: flex; /* Mantenemos flex para alinear label y value dentro de cada item */
+            justify-content: space-between;
+            margin-bottom: 0px; /* Eliminar margen inferior ya que el gap del grid lo manejará */
+            font-size: 1em; /* Fuente ligeramente más pequeña */
+        }
+        .summary-row span:first-child {
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+        .message-box {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .message-content {
+            background-color: #fefefe;
+            margin: 10% auto; /* Margen superior reducido */
+            padding: 15px; /* Padding reducido */
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px; /* Ancho máximo reducido */
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .message-content h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .message-content button {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 15px; /* Padding de botón reducido */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px; /* Margen reducido */
+        }
+        .message-content button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px; /* Margen reducido */
+            padding: 10px; /* Padding reducido */
+            font-size: 0.85em; /* Fuente ligeramente más pequeña */
+            color: #777;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* Ajustes para impresión */
+        @media print {
+            body {
+                background-color: #fff;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                max-width: none;
+                width: 100%;
+            }
+            .form-section, .buttons-container, .footer, .message-box {
+                display: none;
+            }
+            .results-table-container, .summary-section {
+                display: block !important;
+            }
+            .results-table input {
+                border: none;
+                background: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="framed-title">Calculadora de Planes de Pago</h1>
+
+        <h2 class="section-title">Datos del Contacto</h2>
+        <div class="form-section" id="contactInfoSection">
+            <div class="form-field-row">
+                <label for="contactDate" class="text-sm font-medium text-gray-700">Fecha Contacto:</label>
+                <div class="input-wrapper">
+                    <input type="date" id="contactDate" class="rounded-lg" maxlength="10" onchange="updateStartDate()">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personName" class="text-sm font-medium text-gray-700">Nombre:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personName" placeholder="Nombre" class="rounded-lg" maxlength="21" oninput="this.value = this.value.toUpperCase()">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personLastName" class="text-sm font-medium text-gray-700">Apellido:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personLastName" placeholder="Apellido" class="rounded-lg" maxlength="21" oninput="this.value = this.value.toUpperCase()">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personDNI" class="text-sm font-medium text-gray-700">DNI:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personDNI" placeholder="Sin puntos" class="rounded-lg" maxlength="13" oninput="calculateCUIL()">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personGender" class="text-sm font-medium text-gray-700">Género:</label>
+                <div class="input-wrapper">
+                    <select id="personGender" class="rounded-lg" onchange="calculateCUIL()">
+                        <option value="">Seleccione</option>
+                        <option value="male">Masculino</option>
+                        <option value="female">Femenino</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personCUIL" class="text-sm font-medium text-gray-700">CUIL:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personCUIL" class="rounded-lg bg-gray-100" readonly style="max-width: 18ch;">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personPhone" class="text-sm font-medium text-gray-700">Teléfono:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personPhone" placeholder="1112345678" class="rounded-lg" maxlength="14">
+                </div>
+            </div>
+            
+            <div class="form-field-row">
+                <label for="personPhoneAlt1" class="text-sm font-medium text-gray-700">Teléfono Nº 1:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personPhoneAlt1" placeholder="Número (opcional)" class="rounded-lg" maxlength="14">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personPhoneAlt2" class="text-sm font-medium text-gray-700">Teléfono Nº 2:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personPhoneAlt2" placeholder="Número (opcional)" class="rounded-lg" maxlength="14">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personPhoneAlt3" class="text-sm font-medium text-gray-700">Teléfono Nº 3:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personPhoneAlt3" placeholder="Número (opcional)" class="rounded-lg" maxlength="14">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="personPhoneAlt4" class="text-sm font-medium text-gray-700">Teléfono Nº 4:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="personPhoneAlt4" placeholder="Número (opcional)" class="rounded-lg" maxlength="14">
+                </div>
+            </div>
+            <div class="form-field-row" id="additionalNotesRow">
+                <label for="additionalNotes" class="text-sm font-medium text-gray-700">Notas Adicionales:</label>
+                <div class="input-wrapper">
+                    <textarea id="additionalNotes" class="rounded-lg w-full" rows="2" placeholder="Ej: Motivo del préstamo, condiciones especiales, etc."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Refinanciación</h2>
+        <div class="form-section" id="refinancingSection"> <div class="form-field-row">
+                <label for="totalAmount" class="text-sm font-medium text-gray-700">Monto Total:</label>
+                <div class="input-wrapper">
+                    <input type="number" id="totalAmount" value="100000" class="rounded-lg" step="0.01">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="advanceAmount" class="text-sm font-medium text-gray-700">Monto Anticipo:</label>
+                <div class="input-wrapper">
+                    <input type="number" id="advanceAmount" value="0" class="rounded-lg" step="0.01">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="monthlyRate" class="text-sm font-medium text-gray-700">Tasa Mensual (%):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="monthlyRate" value="4" class="rounded-lg" step="0.01">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="numInstallments" class="text-sm font-medium text-gray-700">N° Cuotas:</label>
+                <div class="input-wrapper">
+                    <input type="number" id="numInstallments" value="6" class="rounded-lg">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="fixedInstallmentAmountInput" class="text-sm font-medium text-gray-700">Cuota Fija (opc.):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="fixedInstallmentAmountInput" placeholder="Calculado si vacío" class="rounded-lg" step="0.01">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="frequencyMonths" class="text-sm font-medium text-gray-700">Frecuencia (Meses):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="frequencyMonths" value="1" class="rounded-lg" min="1">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="startDate" class="text-sm font-medium text-gray-700">Fecha Inicio Cuotas:</label>
+                <div class="input-wrapper">
+                    <input type="date" id="startDate" class="rounded-lg">
+                </div>
+            </div>
+            <div class="form-field-row">
+                <label for="punitoryRateDaily" class="text-sm font-medium text-gray-700">Tasa Punitoria Diaria (%):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="punitoryRateDaily" value="1" class="rounded-lg" step="0.001">
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons-container">
+            <button onclick="calculatePaymentPlan()" class="btn btn-primary">Calcular Plan</button>
+            <button onclick="clearForm()" class="btn btn-secondary">Limpiar Formulario</button>
+            <button onclick="printPaymentPlan()" class="btn btn-info">Imprimir Plan</button>
+            <button onclick="sendWhatsappPaymentPlan()" class="btn btn-success">Enviar Teléfono Cuotas Pendientes</button>
+        </div>
+
+        <div id="resultsTableContainer" class="results-table-container hidden">
+            <h2 class="text-xl font-semibold mb-4 mt-8 text-center">Plan de Pagos Detallado</h2>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Cuota #</th>
+                        <th>Saldo Inicial</th>
+                        <th>Interés</th>
+                        <th>Capital</th>
+                        <th>Cuota Fija</th>
+                        <th>Vencimiento</th>
+                        <th>Fecha de Pago</th>
+                        <th>Monto Punitorio</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentPlanTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div id="summarySection" class="summary-section hidden">
+            <h2 class="text-xl font-semibold mb-4 text-center">Resumen de Refinanciación</h2>
+            <div class="summary-row">
+                <span>Monto a Financiar:</span> <span id="summaryLoanAmount"></span>
+            </div>
+            <div class="summary-row">
+                <span>Cuota Fija Calculada:</span> <span id="summaryFixedInstallment"></span>
+            </div>
+            <div class="summary-row">
+                <span>Total Intereses Pagados:</span> <span id="summaryTotalInterest"></span>
+            </div>
+            <div class="summary-row">
+                <span>Total a Pagar (Capital + Intereses):</span> <span id="summaryTotalPaid"></span>
+            </div>
+            <div class="summary-row">
+                <span>CFT (Costo Financiero Total):</span> <span id="summaryCFT"></span>
+            </div>
+            <div class="summary-row">
+                <span>TNA (Tasa Nominal Anual):</span> <span id="summaryTNA"></span>
+            </div>
+            <div class="summary-row">
+                <span>TEA (Tasa Efectiva Anual):</span> <span id="summaryTEA"></span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p id="lastModifiedDate"></p>
+            <p>&copy; 2025 Calculadora de Planes de Pago. Todos los derechos reservados.</p>
+        </div>
+    </div>
+
+    <div id="messageBox" class="message-box">
+        <div class="message-content">
+            <h3 id="messageTitle"></h3>
+            <p id="messageText"></p>
+            <button onclick="hideMessageBox()">Aceptar</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            const day = today.getDate().toString().padStart(2, '0');
+            document.getElementById('contactDate').value = `${year}-${month}-${day}`;
+            updateStartDate(); // Llama a esta función para establecer la fecha de inicio inicial
+            updateLastModifiedDate();
+            document.getElementById('personName').focus(); // Coloca el foco en el campo Nombre
+        });
+
+        function updateLastModifiedDate() {
+            const today = new Date();
+            // Usamos toLocaleString para incluir tanto la fecha como la hora
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit' // Opcional: si quieres segundos también
+            };
+            document.getElementById('lastModifiedDate').textContent = `Última modificación: ${today.toLocaleString('es-AR', options)}`;
+        }
+
+        function updateStartDate() {
+            const contactDateInput = document.getElementById('contactDate').value;
+            if (contactDateInput) {
+                const contactDate = new Date(contactDateInput + 'T00:00:00');
+                const startDate = new Date(contactDate);
+                startDate.setDate(contactDate.getDate() + 30); // Añade 30 días
+
+                const year = startDate.getFullYear();
+                const month = (startDate.getMonth() + 1).toString().padStart(2, '0');
+                const day = startDate.getDate().toString().padStart(2, '0');
+                document.getElementById('startDate').value = `${year}-${month}-${day}`;
+            }
+        }
+
+        function calculateCUIL() {
+            const dni = document.getElementById('personDNI').value;
+            const gender = document.getElementById('personGender').value;
+            const cuilField = document.getElementById('personCUIL');
+
+            if (!dni || !gender) {
+                cuilField.value = '';
+                return;
+            }
+
+            let prefix;
+            if (gender === 'male') {
+                prefix = 20;
+            } else if (gender === 'female') {
+                prefix = 27;
+            } else {
+                cuilField.value = '';
+                return;
+            }
+
+            // Asegurar que el DNI tenga 8 dígitos, rellenando con ceros si es necesario
+            let dniDigits = String(dni).padStart(8, '0').substring(0, 8);
+
+            let base = String(prefix) + dniDigits;
+            let sum = 0;
+            const factors = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(base[i]) * factors[i];
+            }
+
+            let remainder = sum % 11;
+            let digitVerifier;
+
+            if (remainder === 0) {
+                digitVerifier = 0;
+            } else if (remainder === 1) {
+                if (prefix === 20) {
+                    digitVerifier = 9;
+                } else if (prefix === 27) {
+                    digitVerifier = 4;
+                }
+            } else {
+                digitVerifier = 11 - remainder;
+            }
+
+            cuilField.value = `${prefix}-${dniDigits}-${digitVerifier}`;
+        }
+
+        let paymentPlan = [];
+
+        function calculatePaymentPlan() {
+            const personName = document.getElementById('personName').value;
+            const personLastName = document.getElementById('personLastName').value;
+            const personDNI = document.getElementById('personDNI').value;
+            const personCUIL = document.getElementById('personCUIL').value;
+            const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+            const advanceAmount = parseFloat(document.getElementById('advanceAmount').value);
+            const monthlyRate = parseFloat(document.getElementById('monthlyRate').value) / 100;
+            const numInstallments = parseInt(document.getElementById('numInstallments').value);
+            const fixedInstallmentAmountInput = document.getElementById('fixedInstallmentAmountInput').value;
+            const frequencyMonths = parseInt(document.getElementById('frequencyMonths').value);
+            const startDate = new Date(document.getElementById('startDate').value + 'T00:00:00');
+
+            if (isNaN(totalAmount) || isNaN(monthlyRate) || isNaN(numInstallments) || numInstallments <= 0 || isNaN(frequencyMonths) || frequencyMonths <= 0) {
+                showMessageBox('Error de Cálculo', 'Por favor, introduce valores válidos para todos los campos numéricos requeridos.');
+                return;
+            }
+
+            const loanAmount = totalAmount - advanceAmount;
+            if (loanAmount <= 0 && numInstallments > 0) {
+                showMessageBox('Monto Inválido', 'El monto a financiar debe ser mayor que cero si hay cuotas.');
+                return;
+            }
+
+            let effectiveMonthlyRate = monthlyRate;
+            let fixedInstallmentValue;
+
+            if (fixedInstallmentAmountInput) {
+                fixedInstallmentValue = parseFloat(fixedInstallmentAmountInput);
+                if (isNaN(fixedInstallmentValue) || fixedInstallmentValue <= 0) {
+                    showMessageBox('Error de Cuota Fija', 'Por favor, ingresa un valor de cuota fija válido si lo especificas.');
+                    return;
+                }
+            } else {
+                if (effectiveMonthlyRate === 0) {
+                    fixedInstallmentValue = loanAmount / numInstallments;
+                } else {
+                    fixedInstallmentValue = loanAmount * (effectiveMonthlyRate / (1 - Math.pow(1 + effectiveMonthlyRate, -numInstallments)));
+                }
+            }
+
+            paymentPlan = [];
+            let currentBalance = loanAmount;
+            let totalInterestPaid = 0;
+
+            for (let i = 1; i <= numInstallments; i++) {
+                let interestPayment = currentBalance * effectiveMonthlyRate;
+                let principalPayment = fixedInstallmentValue - interestPayment;
+
+                if (i === numInstallments) {
+                    principalPayment = currentBalance;
+                    fixedInstallmentValue = principalPayment + interestPayment;
+                }
+
+                currentBalance -= principalPayment;
+                totalInterestPaid += interestPayment;
+
+                let dueDate = new Date(startDate);
+                dueDate.setMonth(startDate.getMonth() + (i - 1) * frequencyMonths);
+
+                paymentPlan.push({
+                    installmentNumber: i,
+                    initialBalance: (currentBalance + principalPayment),
+                    interestPayment: interestPayment,
+                    principalPayment: principalPayment,
+                    fixedInstallment: fixedInstallmentValue,
+                    dueDate: dueDate,
+                    paymentDate: '',
+                    punitoryAmount: 0,
+                    observations: ''
+                });
+            }
+
+            displayPaymentPlan(totalAmount, advanceAmount, loanAmount, totalInterestPaid);
+        }
+
+        function displayPaymentPlan(totalAmount, advanceAmount, loanAmount, totalInterestPaid) {
+            const tableBody = document.getElementById('paymentPlanTableBody');
+            tableBody.innerHTML = '';
+            paymentPlan.forEach(p => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = p.installmentNumber;
+                row.insertCell().textContent = `$${p.initialBalance.toFixed(2)}`;
+                row.insertCell().textContent = `$${p.interestPayment.toFixed(2)}`;
+                row.insertCell().textContent = `$${p.principalPayment.toFixed(2)}`;
+                row.insertCell().textContent = `$${p.fixedInstallment.toFixed(2)}`;
+                row.insertCell().textContent = p.dueDate.toLocaleDateString('es-AR');
+                const paymentDateCell = row.insertCell();
+                const paymentDateInput = document.createElement('input');
+                paymentDateInput.type = 'date';
+                paymentDateInput.value = p.paymentDate;
+                paymentDateInput.onchange = (e) => p.paymentDate = e.target.value;
+                paymentDateCell.appendChild(paymentDateInput);
+
+                const punitoryAmountCell = row.insertCell();
+                const punitoryInput = document.createElement('input');
+                punitoryInput.type = 'number';
+                punitoryInput.value = p.punitoryAmount.toFixed(2);
+                punitoryInput.step = "0.01";
+                punitoryInput.onchange = (e) => p.punitoryAmount = parseFloat(e.target.value) || 0;
+                punitoryAmountCell.appendChild(punitoryInput);
+                
+                const observationsCell = row.insertCell();
+                const observationsInput = document.createElement('input');
+                observationsInput.type = 'text';
+                observationsInput.value = p.observations;
+                observationsInput.onchange = (e) => p.observations = e.target.value;
+                observationsCell.appendChild(observationsInput);
+            });
+
+            document.getElementById('summarySection').classList.remove('hidden');
+            document.getElementById('summaryLoanAmount').textContent = `$${loanAmount.toFixed(2)}`;
+            document.getElementById('summaryFixedInstallment').textContent = `$${paymentPlan.length > 0 ? paymentPlan[0].fixedInstallment.toFixed(2) : '0.00'}`;
+            document.getElementById('summaryTotalInterest').textContent = `$${totalInterestPaid.toFixed(2)}`;
+            document.getElementById('summaryTotalPaid').textContent = `$${(loanAmount + totalInterestPaid).toFixed(2)}`;
+
+            const numInstallments = paymentPlan.length;
+            const monthlyRate = parseFloat(document.getElementById('monthlyRate').value) / 100;
+            const frequencyMonths = parseInt(document.getElementById('frequencyMonths').value);
+
+            let tna = monthlyRate * 12 * 100;
+            let tea = (Math.pow(1 + monthlyRate, 12) - 1) * 100;
+            
+            if (frequencyMonths !== 1) {
+                const trueRatePerPeriod = Math.pow(1 + monthlyRate, frequencyMonths) - 1;
+                tna = trueRatePerPeriod * (12 / frequencyMonths) * 100;
+                tea = (Math.pow(1 + trueRatePerPeriod, (12 / frequencyMonths)) - 1) * 100;
+            }
+
+            let cft = tea;
+
+            document.getElementById('summaryCFT').textContent = `${cft.toFixed(2)}%`;
+            document.getElementById('summaryTNA').textContent = `${tna.toFixed(2)}%`;
+            document.getElementById('summaryTEA').textContent = `${tea.toFixed(2)}%`;
+
+            document.getElementById('resultsTableContainer').classList.remove('hidden');
+        }
+
+
+        function clearForm() {
+            document.getElementById('personName').value = '';
+            document.getElementById('personLastName').value = '';
+            document.getElementById('personDNI').value = '';
+            document.getElementById('personGender').value = '';
+            document.getElementById('personCUIL').value = '';
+            document.getElementById('personPhone').value = '';
+            document.getElementById('personPhoneAlt1').value = '';
+            document.getElementById('personPhoneAlt2').value = '';
+            document.getElementById('personPhoneAlt3').value = '';
+            document.getElementById('personPhoneAlt4').value = '';
+            
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            const day = today.getDate().toString().padStart(2, '0');
+            document.getElementById('contactDate').value = `${year}-${month}-${day}`;
+            updateStartDate(); // Llama a esta función para establecer la fecha de inicio actualizada
+
+            document.getElementById('totalAmount').value = '100000';
+            document.getElementById('advanceAmount').value = '0';
+            document.getElementById('monthlyRate').value = '4';
+            document.getElementById('numInstallments').value = '6';
+            document.getElementById('fixedInstallmentAmountInput').value = '';
+            document.getElementById('frequencyMonths').value = '1';
+            document.getElementById('punitoryRateDaily').value = '1';
+            document.getElementById('additionalNotes').value = '';
+
+            document.getElementById('paymentPlanTableBody').innerHTML = '';
+            document.getElementById('summarySection').classList.add('hidden');
+            document.getElementById('resultsTableContainer').classList.add('hidden');
+            paymentPlan = [];
+        }
+
+        function showMessageBox(title, message) {
+            document.getElementById('messageTitle').textContent = title;
+            document.getElementById('messageText').textContent = message;
+            document.getElementById('messageBox').style.display = 'block';
+        }
+
+        function hideMessageBox() {
+            document.getElementById('messageBox').style.display = 'none';
+        }
+
+        function printPaymentPlan() {
+            window.print();
+        }
+
+        function sendWhatsappPaymentPlan() {
+            const personName = document.getElementById('personName').value;
+            const personLastName = document.getElementById('personLastName').value;
+            const personDNI = document.getElementById('personDNI').value;
+            const punitoryRateDaily = parseFloat(document.getElementById('punitoryRateDaily').value);
+            const additionalNotes = document.getElementById('additionalNotes').value;
+
+            const phoneNumbers = [
+                document.getElementById('personPhone').value.replace(/\D/g, ''),
+                document.getElementById('personPhoneAlt1').value.replace(/\D/g, ''),
+                document.getElementById('personPhoneAlt2').value.replace(/\D/g, ''),
+                document.getElementById('personPhoneAlt3').value.replace(/\D/g, ''),
+                document.getElementById('personPhoneAlt4').value.replace(/\D/g, '')
+            ];
+
+            let validNumbersFound = 0;
+
+            if (paymentPlan.length === 0) {
+                showMessageBox('Plan de Pagos Vacío', 'Por favor, calcula el plan de pagos antes de intentar enviar por Teléfono.');
+                return;
+            }
+
+            let message = `*PLAN DE PAGOS - ${personLastName.toUpperCase()} ${personName.toUpperCase()} - DNI: ${personDNI || 'N/A'}*\n\n`;
+
+            message += `_Monto a Financiar:_ $${document.getElementById('summaryLoanAmount').textContent.replace('$', '')}\n`;
+            message += `_Total a Pagar:_ $${document.getElementById('summaryTotalPaid').textContent.replace('$', '')}\n`;
+            message += `_Tasa Mensual Variable:_ ${parseFloat(document.getElementById('monthlyRate').value).toFixed(2)}%\n`;
+            message += `_CFT:_ ${document.getElementById('summaryCFT').textContent}\n`;
+            message += `_TNA:_ ${document.getElementById('summaryTNA').textContent}\n`;
+            message += `_TEA:_ ${document.getElementById('summaryTEA').textContent}\n\n`;
+
+            message += `*Detalle de Cuotas Pendientes:*\n`;
+
+            let hasPunitoryAlert = false;
+            let totalPunitorios = 0;
+
+            paymentPlan.forEach(p => {
+                const dueDate = p.dueDate.toLocaleDateString('es-AR');
+                const paymentDate = p.paymentDate;
+                const observations = p.observations;
+                const cuotaFija = parseFloat(p.fixedInstallment.toFixed(2));
+                let punitoryDisplay = '';
+                let punitoriosAplicados = 0;
+
+                if (paymentDate && new Date(paymentDate + 'T00:00:00') > p.dueDate) {
+                    const daysLate = Math.ceil((new Date(paymentDate + 'T00:00:00') - p.dueDate) / (1000 * 60 * 60 * 24));
+                    punitoriosAplicados = cuotaFija * (punitoryRateDaily / 100) * daysLate;
+                    totalPunitorios += punitoriosAplicados;
+                    punitoryDisplay = ` (+ $${punitoriosAplicados.toFixed(2)} punitorios por ${daysLate} días de mora)`;
+                    hasPunitoryAlert = true;
+                } else if (new Date() > p.dueDate && !paymentDate) {
+                    punitoryDisplay = ` (Cuota vencida - sujeta a punitorios)`;
+                    hasPunitoryAlert = true;
+                }
+
+                message += `Cuota ${p.installmentNumber}: $${cuotaFija.toFixed(2)} (Vence: ${dueDate}) ${paymentDate ? `(Pagada: ${new Date(paymentDate + 'T00:00:00').toLocaleDateString('es-AR')})` : ''}${punitoryDisplay}${observations ? ` - Obs: ${observations}` : ''}\n`;
+            });
+
+            if (hasPunitoryAlert) {
+                message += `\n_Recordatorio: La tasa de intereses punitorios diaria es del ${punitoryRateDaily.toFixed(3)}% sobre la cuota fija por día de atraso._\n`;
+                if (totalPunitorios > 0) {
+                    message += `_Total de Punitorios Calculados (hasta ahora):_ $${totalPunitorios.toFixed(2)}\n`;
+                }
+            }
+
+            if (additionalNotes) {
+                message += `\n*Notas Adicionales:*\n${additionalNotes}\n`;
+            }
+            
+            message += `\n*Importante: Recuerde que de no cumplir con el acuerdo, el mismo queda sin efecto y los pagos ingresados serán tomados como pago a cuenta.*\n`;
+
+            message += `\n¡Gracias!`;
+
+            phoneNumbers.forEach(number => {
+                if (number) {
+                    let formattedNumber = number;
+                    // Intenta agregar 549 si no comienza con 549 o +549
+                    if (!formattedNumber.startsWith('549') && !formattedNumber.startsWith('+549')) {
+                        formattedNumber = `549${formattedNumber}`;
+                    }
+                    const whatsappURL = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappURL, '_blank');
+                    validNumbersFound++;
+                }
+            });
+
+            if (validNumbersFound === 0) {
+                showMessageBox('Número de Teléfono Requerido', 'Por favor, ingresa al menos un número de teléfono (principal o alternativo) para enviar el mensaje.');
+            } else {
+                showMessageBox('Mensajes de Teléfono enviados', `Se abrieron ${validNumbersFound} pestañas para enviar los mensajes.`);
+            }
+        }
+    </script>
+</body>
+</html>
